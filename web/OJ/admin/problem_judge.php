@@ -8,7 +8,11 @@ if(isset($_POST['manual'])){
         $sid=intval($_POST['sid']);
         $result=intval($_POST['result']);
         if($result>=0){
+		  if($result==4){
           $sql="UPDATE solution SET result=$result WHERE solution_id=$sid LIMIT 1";
+		  } else {
+			$sql="UPDATE solution SET result=$result, `pass_rate`=0 WHERE solution_id=$sid LIMIT 1";
+		  }
           $mysqli->query($sql);
         }
         if(isset($_POST['explain'])){
