@@ -152,6 +152,13 @@ if(isset($_POST['update_solution'])){
 	$sql="UPDATE `problem` SET `submit`=(SELECT count(1) FROM `solution` WHERE `problem_id`=$pid) WHERE `problem_id`=$pid";
 	//echo $sql;
 	$mysqli->query($sql);
+	$cid=intval($_POST['cid']);
+	if($cid>0){
+		$sql="UPDATE `contest_problem` SET `c_accepted`=(SELECT count(1) FROM `solution` WHERE `problem_id`=$pid and contest_id=$cid AND `result`=4) WHERE `problem_id`=$pid and contest_id=$cid";
+		$mysqli->query($sql);
+		$sql="UPDATE `contest_problem` SET `c_submit`=(SELECT count(1) FROM `solution` WHERE `problem_id`=$pid and contest_id=$cid) WHERE `problem_id`=$pid and contest_id=$cid";
+		$mysqli->query($sql);
+	}
 
   //动态计算题目分值 start
   // get user numbers

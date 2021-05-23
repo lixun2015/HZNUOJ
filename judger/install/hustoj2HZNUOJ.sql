@@ -303,10 +303,12 @@ begin
     IF @cnt=0 THEN
         ALTER TABLE `contest_problem` ADD COLUMN `c_accepted` int(11) NOT NULL DEFAULT '0' AFTER `num`;
     END IF;
+    UPDATE `contest_problem` SET `c_accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND `result`=4 AND contest_id=`contest_problem`.`contest_id`);
     SELECT count(*) INTO @cnt FROM information_schema.columns WHERE `TABLE_SCHEMA` ='jol' AND `TABLE_NAME` = 'contest_problem' AND `COLUMN_NAME` = 'c_submit';
     IF @cnt=0 THEN
         ALTER TABLE `contest_problem` ADD COLUMN `c_submit` int(11) NOT NULL DEFAULT '0' AFTER `c_accepted`;
     END IF;
+    UPDATE `contest_problem` SET `c_submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND contest_id=`contest_problem`.`contest_id`);
     SELECT count(*) INTO @cnt FROM information_schema.statistics WHERE `TABLE_SCHEMA` ='jol' AND table_name='contest_problem' AND index_name='Index_contest_id' ;
     IF @cnt=0 THEN
 	    ALTER TABLE `contest_problem` ADD INDEX `Index_contest_id` (`contest_id`);

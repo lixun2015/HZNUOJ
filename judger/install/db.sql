@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS `contest_problem` (
   `contest_id` int(11) NOT NULL,
   `title` char(200) NOT NULL DEFAULT '',
   `num` int(11) NOT NULL DEFAULT '0',
+  `c_accepted` int(11) NOT NULL DEFAULT '0',
+  `c_submit` int(11) NOT NULL DEFAULT '0',
   `score` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`index`),
   KEY `contest_id` (`contest_id`) USING BTREE,

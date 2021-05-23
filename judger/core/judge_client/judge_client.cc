@@ -1137,14 +1137,14 @@ void _update_problem_http(int pid,int cid)
 void _update_problem_mysql(int p_id,int cid)
 {
   char sql[BUFFER_SIZE];
-  // if(cid>0){ //HZNUOJ的contest_problem表里面没有c_accepted字段
-  //   sprintf(sql,
-  //     "UPDATE `contest_problem` SET `c_accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=%d AND `result`=4 and contest_id=%d) WHERE `problem_id`=%d and contest_id=%d",
-  //     p_id,cid, p_id,cid);
-  //   printf("sql:[%s]\n",sql);
-  //   if (mysql_real_query(conn, sql, strlen(sql)))
-  //     write_log(mysql_error(conn));
-  // }
+  if(cid>0){ //contest_problem表中增加c_accepted字段，提高竞赛/作业中每道题AC数的查询效率
+    sprintf(sql,
+      "UPDATE `contest_problem` SET `c_accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=%d AND `result`=4 and contest_id=%d) WHERE `problem_id`=%d and contest_id=%d",
+      p_id,cid, p_id,cid);
+    printf("sql:[%s]\n",sql);
+    if (mysql_real_query(conn, sql, strlen(sql)))
+      write_log(mysql_error(conn));
+  }
 
   sprintf(sql,
       "UPDATE `problem` SET `accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=%d AND `result`=4) WHERE `problem_id`=%d",
@@ -1153,13 +1153,13 @@ void _update_problem_mysql(int p_id,int cid)
   if (mysql_real_query(conn, sql, strlen(sql)))
     write_log(mysql_error(conn));
 
-  // if(cid>0){//HZNUOJ的contest_problem表里面没有c_submit字段
-  //   sprintf(sql,
-  //     "UPDATE `contest_problem` SET `c_submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=%d AND  contest_id=%d) WHERE `problem_id`=%d and contest_id=%d",
-  //     p_id,cid, p_id,cid);
-  //   if (mysql_real_query(conn, sql, strlen(sql)))
-  //     write_log(mysql_error(conn));
-  // }
+  if(cid>0){//contest_problem表中增加c_submit字段，提高竞赛/作业中每道题提交数的查询效率
+    sprintf(sql,
+      "UPDATE `contest_problem` SET `c_submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=%d AND  contest_id=%d) WHERE `problem_id`=%d and contest_id=%d",
+      p_id,cid, p_id,cid);
+    if (mysql_real_query(conn, sql, strlen(sql)))
+      write_log(mysql_error(conn));
+  }
 
   sprintf(sql,
       "UPDATE `problem` SET `submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=%d) WHERE `problem_id`=%d",

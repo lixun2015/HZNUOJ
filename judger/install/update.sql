@@ -19,6 +19,10 @@ ALTER TABLE `solution` MODIFY COLUMN `ip` char(46) NOT NULL;
 ALTER TABLE `team` MODIFY COLUMN `ip` varchar(46) DEFAULT NULL;
 ALTER TABLE `users` MODIFY COLUMN `ip` varchar(46) NOT NULL DEFAULT '';
 ALTER TABLE `users` ADD COLUMN `access_level` tinyint NOT NULL DEFAULT 0;
+ALTER TABLE `contest_problem` ADD COLUMN `c_accepted` int(11) NOT NULL DEFAULT '0' AFTER `num`;
+ALTER TABLE `contest_problem` ADD COLUMN `c_submit` int(11) NOT NULL DEFAULT '0' AFTER `c_accepted`;
+UPDATE `contest_problem` SET `c_submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND contest_id=`contest_problem`.`contest_id`);
+UPDATE `contest_problem` SET `c_accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND `result`=4 AND contest_id=`contest_problem`.`contest_id`);
 -- Dump completed on 2019-03-13 17:03:43
 -- ----------------------------
 -- Table structure for `class_list`

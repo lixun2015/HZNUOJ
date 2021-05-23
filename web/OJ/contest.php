@@ -140,73 +140,14 @@ if (isset($_GET['cid'])){
     if($can_enter_contest) {
         
     }
-    $sql=<<<SQL
-      SELECT
-        *
-      FROM
-        (
-          SELECT
-            `problem`.`title` AS `title`,
-            `problem`.`problem_id` AS `pid`,
-            source AS source,
-            author AS author,
-            num AS pnum,
-            contest_problem.score as score
-          FROM
-            `contest_problem`,
-            `problem`
-          WHERE
-            `contest_problem`.`problem_id` = `problem`.`problem_id`
-          AND `contest_problem`.`contest_id` = $cid
-          ORDER BY
-            `contest_problem`.`num`
-        ) problem
-      LEFT JOIN (
-        SELECT
-          problem_id pid1,
-          Count(DISTINCT user_id) accepted
-        FROM
-          solution
-        WHERE
-          result = 4
-        AND contest_id = $cid
-        GROUP BY
-          pid1
-      ) p1 ON problem.pid = p1.pid1
-      LEFT JOIN (
-        SELECT
-          problem_id pid2,
-          Count(1) submit
-        FROM
-          solution
-        WHERE
-          contest_id = $cid
-        GROUP BY
-          pid2
-      ) p2 ON problem.pid = p2.pid2
-      LEFT JOIN (
-        SELECT
-          problem_id pid3,
-          Count(DISTINCT user_id) total_accepted
-        FROM
-          solution
-        WHERE
-          result = 4
-        GROUP BY
-          pid3
-      ) p3 ON problem.pid = p3.pid3
-      LEFT JOIN (
-        SELECT
-          problem_id pid4,
-          Count(1) total_submit
-        FROM
-          solution
-        GROUP BY
-          pid4
-      ) p4 ON problem.pid = p4.pid4
-      ORDER BY
-        pnum
-SQL;
+    $sql = "select p.title,p.problem_id as pid,p.source,p.author,cp.num as pnum,cp.score,cp.c_accepted accepted,cp.c_submit submit";
+    if($practice) $sql .= ",p1.total_accepted,p2.total_submit";
+    $sql .= " from problem p inner join contest_problem cp on p.problem_id = cp.problem_id and cp.contest_id=$cid ";
+    if($practice){
+      $sql .= "LEFT JOIN (SELECT problem_id pid1,Count(1) total_accepted FROM solution WHERE result = 4 GROUP BY pid1) p1 ON p.problem_id = p1.pid1 ";
+      $sql .= "LEFT JOIN (SELECT problem_id pid2,Count(1) total_submit FROM solution GROUP BY pid2) p2 ON p.problem_id = p2.pid2 ";
+    }
+    $sql .= "order by pnum";
     $result=$mysqli->query($sql);
     $view_problemset=Array();
     

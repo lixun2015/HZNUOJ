@@ -77,24 +77,21 @@ if (isset($_POST['startdate'])) { // 如果有POST过来的信息，则获取POS
     if($temp!="") {	
 	    $plist=explode("\n", $temp);
       $score_list=explode("\n", trim($_POST['score_list']));
-        $sql_1=<<<TEXT
-      INSERT INTO `contest_problem`(`contest_id`,`problem_id`,`num`, score) VALUES
-TEXT;
-        foreach ($plist as $i => $pid) {
-            $pid = intval($pid);
-            $score = 100; //每题分值若留空则默认100分
-			if($i < count($score_list) && $score_list[$i]!="") {
-            $score = intval($score_list[$i]);
-			}
-            if($i) $sql_1 .= ",";
-            $sql_1=$sql_1."('$cid','$pid',$i,$score)";
-        
-            $sql_2="update solution set num='$i' where contest_id='$cid' and problem_id='$pid';";
-            $mysqli->query($sql_2);
-        
-        }
-        //var_dump($sql_1);die(0);
-        $mysqli->query($sql_1) or die($mysqli->error);
+      foreach ($plist as $i => $pid) {
+          $pid = intval($pid);
+          $score = 100; //每题分值若留空则默认100分
+          if($i < count($score_list) && $score_list[$i]!="") {
+                $score = intval($score_list[$i]);
+          }
+          $sql="INSERT INTO `contest_problem`(`contest_id`,`problem_id`,`num`, score) VALUES ('$cid','$pid',$i,$score)";
+          $mysqli->query($sql) or die($mysqli->error);
+          $sql="UPDATE `contest_problem` SET `c_accepted`=(SELECT count(1) FROM `solution` WHERE `problem_id`=$pid and contest_id=$cid AND `result`=4) WHERE `problem_id`=$pid and contest_id=$cid";
+          $mysqli->query($sql);
+          $sql="UPDATE `contest_problem` SET `c_submit`=(SELECT count(1) FROM `solution` WHERE `problem_id`=$pid and contest_id=$cid) WHERE `problem_id`=$pid and contest_id=$cid";
+          $mysqli->query($sql);
+          $sql="update solution set num='$i' where contest_id='$cid' and problem_id='$pid';";
+          $mysqli->query($sql);
+      }
     }
   //更新题目列表和分值 end
   
