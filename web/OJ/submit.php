@@ -1,12 +1,33 @@
 <?php if(!session_id()) session_start();
 require_once("include/const.inc.php");
+require_once("include/check_post_key.php");
+require_once("include/db_info.inc.php");
 if (!isset($_SESSION['user_id'])){
 	$view_errors= "<a href=./loginpage.php>$MSG_Login</a>";
 	require("template/".$OJ_TEMPLATE."/error.php");
 	exit(0);
 }
-require_once("include/check_post_key.php");
-require_once("include/db_info.inc.php");
+if (isset($OJ_points_enable) && $OJ_points_enable && !isset($_SESSION['contest_id'])){
+	$sql="SELECT `points` FROM `users` WHERE `user_id`='{$_SESSION['user_id']}'";
+	$result=$mysqli->query($sql);
+	if ($row=$result->fetch_object()){
+	    $points=$row->points;
+	} else $points=0;
+	if(isset($OJ_points_submit)){
+		$points_pay = $OJ_points_submit;
+	} else {
+		$points_pay = 1;
+	}
+	if( $points < 0 && !IS_ADMIN($_SESSION['user_id'])){
+		$view_errors= "<a href='./points_rechange.php'>余额不足，当前剩余&nbsp;".round($points,2)." <span class='am-icon-apple'></span>，请点击此处{$MSG_Recharge}{$MSG_points}。</a>";
+		require("template/".$OJ_TEMPLATE."/error.php");
+		exit(0);
+	} else if( $points < $points_pay && !IS_ADMIN($_SESSION['user_id'])){
+		$view_errors= "<a href='./points_rechange.php'>提交一次代码需扣除$points_pay <span class='am-icon-apple'>，当前剩余&nbsp;".round($points,2)." <span class='am-icon-apple'></span>，请点击此处{$MSG_Recharge}{$MSG_points}。</a>";
+		require("template/".$OJ_TEMPLATE."/error.php");
+		exit(0);
+	}
+} 
 require_once("include/my_func.inc.php");
   $now=strftime("%Y-%m-%d %H:%M",time());
 $user_id=$_SESSION['user_id'];
@@ -65,8 +86,9 @@ if (isset($_POST['id'])) {
 	$result=$mysqli->query($sql);
 	$rows_cnt=$result->num_rows;
 	if ($rows_cnt!=1){
-		echo "You Can't Submit Now Because Your are not invited by the contest or the contest is not running!!";
 		$result->free();
+		$view_errors="<span class='am-text-danger'>You Can't Submit Now Because Your are not invited by the contest or the contest is not running!!</span>";
+		require("template/".$OJ_TEMPLATE."/error.php");
 		exit(0);
 	}else{
 		$row=$result->fetch_array();
@@ -195,6 +217,18 @@ if(($OJ_LANGMASK)&(1<<$language)){
 	$sql="INSERT INTO `source_code`(`solution_id`,`source`)VALUES('$insert_id','$source')";
 	$mysqli->query($sql);
 
+	if (isset($OJ_points_enable) && $OJ_points_enable && !isset($_SESSION['contest_id'])){
+		if (!isset($pid)){
+			$item = '<a href="showsource.php?id='.$insert_id.'" target="_blank">代码提交-'.$id."</a>";
+		} else {
+			$item = '<a href="showsource.php?id='.$insert_id.'" target="_blank">代码提交-'.$id."(".$cid."-".PID($pid).")</a>";
+		}
+		$sql="UPDATE `users` SET `points`=`points`- $points_pay WHERE `user_id`='$user_id'";//扣除积分
+		$mysqli->query($sql);
+		//pay_type  0 提交代码扣积分，1 加奖励积分， 2 扣惩罚扣分， 3 其他人工处理加减积分
+		$sql="INSERT INTO `points_log`(`item`,`user_id`,`solution_id`, `pay_type`, `pay_points`,`pay_time` ) VALUES('$item','$user_id', '$insert_id',0, -$points_pay, NOW())";//插入积分日志
+		$mysqli->query($sql);
+	}
 	if($test_run){
 		$sql="INSERT INTO `custominput`(`solution_id`,`input_text`)VALUES('$insert_id','$input_text')";
 		$mysqli->query($sql);

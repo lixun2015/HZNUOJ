@@ -39,6 +39,15 @@ require_once("header.php");
             <tr><th class="first-col am-text-right"><?php echo $MSG_RANK ?>&nbsp;&nbsp;&nbsp;&nbsp;</th><td><?php echo $Rank?></td></tr>
             <tr><th class="first-col am-text-right"><?php echo $MSG_STRENGTH ?>&nbsp;&nbsp;&nbsp;&nbsp;</th><td><?php echo round($strength)?></td></tr>
             <tr><th class="first-col am-text-right"><?php echo $MSG_LEVEL ?>&nbsp;&nbsp;&nbsp;&nbsp;</th><td><?php echo $level?></td></tr>
+            <?php if(isset($OJ_points_enable)&&$OJ_points_enable){ ?>
+            <tr><th class="first-col am-text-right"><?php echo $MSG_points ?>&nbsp;&nbsp;&nbsp;&nbsp;</th><td>
+              <?php
+              if(IS_ADMIN($_SESSION['user_id']) || $_SESSION['user_id']==htmlentities($user) ){
+                echo "<a href='./points_history.php?user=".htmlentities($user)."'>".round($userpoints,2)."&nbsp;<span class=\"am-icon-apple\"></span></a>";
+              } else echo round($userpoints,2)."&nbsp;<span class=\"am-icon-apple\"></span>";
+              ?>
+            </td></tr>
+            <?php } ?>
             <tr>
               <th class="first-col am-text-right"><?php echo $MSG_SOLVED ?>&nbsp;&nbsp;&nbsp;&nbsp;</th>
               <td><a href="status.php?user_id=<?php echo htmlentities($user)?>&jresult=4"><?php echo $local_ac?></a></td>

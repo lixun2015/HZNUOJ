@@ -27,7 +27,7 @@ if (isset($_POST['save']) || isset($_POST['del'])) { //删除或者更新注册�
             $err_str .= "输入的{$MSG_REG_CODE}限20位字母、数字或下划线 ！\\n";
             $err_cnt++;
         }
-        if (!preg_match("/^[1-9][0-9]{0,3}$/", $remain_num) && $remain_num!=-1) {
+        if (!preg_match("/^[1-9][0-9]{0,3}$/", $remain_num) && $remain_num!=-1  && $remain_num!=0) {
             $err_str .= "输入的{$MSG_Remain_Num}要求是介于-1~9999的整数 ！\\n";
             $err_cnt++;
         }

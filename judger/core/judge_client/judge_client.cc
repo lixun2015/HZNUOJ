@@ -177,6 +177,10 @@ static int use_ptrace = 1;
 static int compile_chroot = 1;
 static int turbo_mode = 0;
 static int python_free=0;
+static int points_enable=0;
+static double points_AC=1.0;
+static double points_firstAC=1.0;
+static double points_Wrong=0.0;
 static const char *tbname = "solution";
 int num_of_test = 0;
 //static int sleep_tmp;
@@ -498,6 +502,10 @@ void init_mysql_conf()
       read_int(buf, "OJ_COPY_DATA", &copy_data);
       read_int(buf, "OJ_HTTP_DOWNLOAD", &http_download);
       read_int(buf, "OJ_TIME_LIMIT_TO_TOTAL", &time_limit_to_total);
+      read_int(buf, "OJ_points_enable", &points_enable);
+      read_double(buf, "OJ_points_AC", &points_AC);
+      read_double(buf, "OJ_points_firstAC", &points_firstAC);
+      read_double(buf, "OJ_points_Wrong", &points_Wrong);
     }
     fclose(fp);
   }
@@ -807,6 +815,150 @@ void _update_solution_mysql(int solution_id, int result, int time, int memory,
   char judger[BUFFER_SIZE/10];
   mysql_real_escape_string(conn, judger, http_username, strlen(http_username));
 
+  if(points_enable==1 && result >=4){
+    MYSQL_RES *res;
+    MYSQL_ROW row;
+    sprintf(sql,"SELECT lastresult,problem_id,user_id,contest_id,num FROM %s WHERE solution_id=%d ", tbname, solution_id);
+    mysql_real_query(conn, sql, strlen(sql));
+    res = mysql_store_result(conn);
+    if (row = mysql_fetch_row(res)){
+      double points_pay = 0;
+      char user_id[BUFFER_SIZE];
+      char plog[BUFFER_SIZE];
+      char cpid[BUFFER_SIZE];
+      int lastresult = atoi(row[0]);
+      int problem_id = atoi(row[1]);
+      strcpy(user_id, row[2]);
+      int contest_id;
+      if(row[3]!= NULL) contest_id = atoi(row[3]);
+      else contest_id = 0;
+      int num = atoi(row[4]);
+      sprintf(sql,"SELECT user_id FROM `users` WHERE user_id=\'%s\'", user_id);
+      mysql_real_query(conn, sql, strlen(sql));
+      res = mysql_store_result(conn);
+      if (row = mysql_fetch_row(res)){//不存在的普通账号不更新积分（可能是比赛账号，也可能是删除的账号）
+        if(contest_id > 0) { //把数字序号转成字母序号ABCD
+          num++;
+          strcpy(cpid, "");
+          while(num){
+            num--;
+            sprintf(cpid,"%s%c",cpid,(char)(num%26+65) );
+            num /= 26;
+          }
+          int len = strlen(cpid);
+          char t;
+          for(int i=0; i < len/2; i++){
+            t = cpid[i];
+            cpid[i] = cpid[len-1-i];
+            cpid[len-1-i] = t;
+          }
+        }
+        sprintf(sql,"SELECT count(user_id) FROM %s WHERE problem_id=%d AND result=4 AND user_id=\'%s\'", tbname, problem_id, user_id);
+        mysql_real_query(conn, sql, strlen(sql));
+        res = mysql_store_result(conn);
+        row = mysql_fetch_row(res);
+        int AC_already = atoi(row[0]);
+        //计算积分 pay_type  0 提交代码扣积分，1 加奖励积分， 2 扣惩罚扣分， 3 其他人工处理加减积分
+        if (lastresult==0){//新提交代码
+          if(result!=4){ //新交代码是错的
+            points_pay = -points_Wrong;
+            //插入积分日志
+            if(points_pay!=0){
+              if(contest_id > 0){
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">代码错误-%d(%d-%s)</a>", solution_id, problem_id, contest_id, cpid);
+              } else {
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">代码错误-%d</a>", solution_id, problem_id);
+              }
+              sprintf(sql,"INSERT INTO `points_log`(`item`,`user_id`,`solution_id`,`pay_type`,`pay_points`,`pay_time` ) VALUES(\'%s\', \'%s\', %d, 2, %lf, NOW())", plog, user_id, solution_id, points_pay);
+              mysql_real_query(conn, sql, strlen(sql));
+            }
+          } else { //新交代码是对的
+            if(AC_already==0){
+                points_pay = points_firstAC;
+            } else {
+                points_pay = points_AC;
+            }
+            //插入积分日志
+            if(points_pay!=0){
+              if(contest_id > 0){
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">代码正确-%d(%d-%s)</a>", solution_id, problem_id, contest_id, cpid);
+              } else {
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">代码正确-%d</a>", solution_id, problem_id);
+              }
+              sprintf(sql,"INSERT INTO `points_log`(`item`,`user_id`,`solution_id`,`pay_type`,`pay_points`,`pay_time` ) VALUES(\'%s\', \'%s\', %d, 1, %lf, NOW())", plog, user_id, solution_id, points_pay);
+              mysql_real_query(conn, sql, strlen(sql));
+            }
+          }
+        } else {//老代码重判
+          if(lastresult==4 && result!=4){
+            points_pay = -points_Wrong;//扣惩罚积分
+            //插入积分日志
+            if(points_pay!=0){
+              if(contest_id > 0){
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">重判，代码错误-%d(%d-%s)</a>", solution_id, problem_id, contest_id, cpid);
+              } else {
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">重判，代码错误-%d</a>", solution_id, problem_id);
+              }
+              sprintf(sql,"INSERT INTO `points_log`(`item`,`user_id`,`solution_id`,`pay_type`,`pay_points`,`pay_time` ) VALUES(\'%s\', \'%s\', %d, 2, %lf, NOW())", plog, user_id, solution_id, points_pay);
+              mysql_real_query(conn, sql, strlen(sql));
+            }
+            //扣回加分
+            sprintf(sql,"SELECT pay_points,`index` FROM `points_log` WHERE solution_id=%d AND pay_type=1 AND pay_points>0", solution_id);
+            mysql_real_query(conn, sql, strlen(sql));
+            res = mysql_store_result(conn);
+            if (row = mysql_fetch_row(res)){//能查到加分记录
+              points_pay -= atof(row[0]);
+              sprintf(sql,"DELETE FROM `points_log` WHERE `index`=%d", atoi(row[1]));
+              mysql_real_query(conn, sql, strlen(sql));
+            }
+          } else if(lastresult!=4 && result==4){
+            if(AC_already==0){//加奖励积分
+              points_pay = points_firstAC;
+            } else {
+              points_pay = points_AC;
+            }
+            //插入积分日志
+            if(points_pay!=0){
+              if(contest_id > 0){
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">重判，代码正确-%d(%d-%s)</a>", solution_id, problem_id, contest_id, cpid);
+              } else {
+                sprintf(plog, "<a href=\"showsource.php?id=%d\" target=\"_blank\">重判，代码正确-%d</a>", solution_id, problem_id);
+              }
+              sprintf(sql,"INSERT INTO `points_log`(`item`,`user_id`,`solution_id`,`pay_type`,`pay_points`,`pay_time` ) VALUES(\'%s\', \'%s\', %d, 1, %lf, NOW())", plog, user_id, solution_id, points_pay);
+              mysql_real_query(conn, sql, strlen(sql));
+            }
+            //加回扣分
+            sprintf(sql,"SELECT pay_points,`index` FROM `points_log` WHERE solution_id=%d AND pay_type=2 AND pay_points<0", solution_id);
+            mysql_real_query(conn, sql, strlen(sql));
+            res = mysql_store_result(conn);
+            if (row = mysql_fetch_row(res)){//能查到扣分记录
+              points_pay -= atof(row[0]);
+              sprintf(sql,"DELETE FROM `points_log` WHERE `index`=%d", atoi(row[1]));
+              mysql_real_query(conn, sql, strlen(sql));
+            }
+          }
+        }
+        if(points_pay != 0){//结算积分
+          sprintf(sql,"UPDATE `users` SET `points`=`points`+%lf WHERE user_id=\'%s\'", points_pay, user_id);
+          mysql_real_query(conn, sql, strlen(sql));
+        }
+      }
+    }
+  } 
+  if ( result >= 4){
+    if (oi_mode)
+    {
+      sprintf(sql,
+              "UPDATE %s SET result=%d,time=%d,memory=%d,pass_rate=%f,judger='%s',lastresult=%d,judgetime=now() WHERE solution_id=%d ",
+              tbname, result, time, memory, pass_rate, judger, result, solution_id);
+    }
+    else
+    {
+      sprintf(sql,
+              "UPDATE %s SET result=%d,time=%d,memory=%d,judger='%s',lastresult=%d,judgetime=now() WHERE solution_id=%d ",
+              tbname, result, time, memory,judger, result, solution_id);
+    }
+  } else
   if (oi_mode)
   {
     sprintf(sql,

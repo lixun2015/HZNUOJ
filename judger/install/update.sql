@@ -19,10 +19,6 @@ ALTER TABLE `solution` MODIFY COLUMN `ip` char(46) NOT NULL;
 ALTER TABLE `team` MODIFY COLUMN `ip` varchar(46) DEFAULT NULL;
 ALTER TABLE `users` MODIFY COLUMN `ip` varchar(46) NOT NULL DEFAULT '';
 ALTER TABLE `users` ADD COLUMN `access_level` tinyint NOT NULL DEFAULT 0;
-ALTER TABLE `contest_problem` ADD COLUMN `c_accepted` int(11) NOT NULL DEFAULT '0' AFTER `num`;
-ALTER TABLE `contest_problem` ADD COLUMN `c_submit` int(11) NOT NULL DEFAULT '0' AFTER `c_accepted`;
-UPDATE `contest_problem` SET `c_submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND contest_id=`contest_problem`.`contest_id`);
-UPDATE `contest_problem` SET `c_accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND `result`=4 AND contest_id=`contest_problem`.`contest_id`);
 -- Dump completed on 2019-03-13 17:03:43
 -- ----------------------------
 -- Table structure for `class_list`
@@ -77,3 +73,25 @@ INSERT INTO `course` VALUES ('9', '分支结构入门', '3', '1', '0');
 INSERT INTO `course` VALUES ('10', '循环结构入门', '4', '1', '0');
 INSERT INTO `course` VALUES ('11', '1000', '0', '6', '1');
 
+-- 2021年升级
+ALTER TABLE `contest_problem` ADD COLUMN `c_accepted` int(11) NOT NULL DEFAULT '0' AFTER `num`;
+ALTER TABLE `contest_problem` ADD COLUMN `c_submit` int(11) NOT NULL DEFAULT '0' AFTER `c_accepted`;
+UPDATE `contest_problem` SET `c_submit`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND contest_id=`contest_problem`.`contest_id`);
+UPDATE `contest_problem` SET `c_accepted`=(SELECT count(*) FROM `solution` WHERE `problem_id`=`contest_problem`.`problem_id` AND `result`=4 AND contest_id=`contest_problem`.`contest_id`);
+ALTER TABLE `problem` CHANGE `time_limit` `time_limit` DECIMAL(10,3) NOT NULL DEFAULT '0';
+ALTER TABLE `users` ADD COLUMN `points` decimal(10,2) DEFAULT '0.00';
+ALTER TABLE `solution` ADD `lastresult` SMALLINT(6) NOT NULL DEFAULT '0' AFTER `judger`;
+UPDATE `solution` SET `lastresult`=`result`;
+CREATE TABLE IF NOT EXISTS `points_log` (
+  `index` int(11) NOT NULL AUTO_INCREMENT,
+  `item` varchar(100) NOT NULL,
+  `operator` varchar(48) NOT NULL DEFAULT '',
+  `user_id` varchar(48) NOT NULL DEFAULT '',
+  `solution_id` int(11) NOT NULL DEFAULT '0',
+  `pay_type` tinyint(4) NOT NULL,
+  `pay_points` DECIMAL(10,2) NOT NULL,
+  `pay_time` DATETIME NOT NULL,
+  PRIMARY KEY (`index`),
+  KEY `solution_id` (`solution_id`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+ALTER TABLE `class_list` ADD `give_points` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `enrollment_year`;

@@ -38,6 +38,13 @@
   $MSG_LOSTPASSWORD_HELP2="请将发到您邮箱中的".$MSG_Securekey."填写到相应位置；如果填写正确通过下一步验证，这个验证码就自动成为您的新密码！";
   $MSG_RESETPASSWORD_SUCC="已将输入的".$MSG_Securekey."设置为您的新密码。 点击<a href='loginpage.php'>这里</a>登录！";
   $MSG_RESETPASSWORD_FAIL="密码重置失败！";
+  $MSG_points="积分";
+  $MSG_Recharge="充值";
+  $MSG_InitialPoints="原始积分";
+  $MSG_PointsHistory="积分记录";
+  $MSG_Income = "收入";
+  $MSG_Expenditure ="支出";
+  $MSG_Operator ="操作人";
 
   // 比赛导航栏
   $MSG_BACK_TO_HOME = "返回主页";
@@ -184,15 +191,15 @@
   $MSG_CO="编译成功";
 
   //registerpage.php
-  $MSG_USER_ID="用户名";
+  $MSG_USER_ID="账号";
   $MSG_PASSWORD="密码";
   $MSG_REPEAT_PASSWORD="重复密码";
   $MSG_SCHOOL="学校";
   $MSG_EMAIL="电子邮箱";
   $MSG_REG_INFO="注册信息";
   $MSG_VCODE="验证码";
-  $MSG_REG_CODE="注册码";
-  $MSG_Remain_Num="注册名额";
+  $MSG_REG_CODE="邀请码";
+  $MSG_Remain_Num="剩余名额";
 
     //problem.php
   $MSG_NO_SUCH_PROBLEM="题目不可用!";

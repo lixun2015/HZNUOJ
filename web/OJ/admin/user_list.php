@@ -90,64 +90,100 @@ switch ($args['sort_method']) {
         $acctime_icon = "am-icon-sort-amount-desc";
         $regtime_icon = "am-icon-sort";
         $strength_icon = "am-icon-sort";
+        $points_icon = "am-icon-sort";
         $sql_filter .= " ORDER BY `accesstime` DESC,user_id ";
         $accTime = 'AccTime_ASC';
         $regTime = 'RegTime_DESC';
         $strength = 'strength_DESC';
+        $points = 'points_DESC';
         break;
     case 'AccTime_ASC':
         $acctime_icon = "am-icon-sort-amount-asc";
         $regtime_icon = "am-icon-sort";
         $strength_icon = "am-icon-sort";
+        $points_icon = "am-icon-sort";
         $sql_filter .= " ORDER BY `accesstime`,user_id ";
         $accTime = 'AccTime_DESC';
         $regTime = 'RegTime_DESC';
         $strength = 'strength_DESC';
+        $points = 'points_DESC';
         break;
     case 'RegTime_ASC':
         $acctime_icon = "am-icon-sort";
         $regtime_icon = "am-icon-sort-amount-asc";
         $strength_icon = "am-icon-sort";
+        $points_icon = "am-icon-sort";
         $sql_filter .= " ORDER BY `reg_time`,user_id ";
         $accTime = 'AccTime_DESC';
         $regTime = 'RegTime_DESC';
         $strength = 'strength_DESC';
+        $points = 'points_DESC';
         break;
     case 'RegTime_DESC':
     default:
         $acctime_icon = "am-icon-sort";
         $regtime_icon = "am-icon-sort-amount-desc";
         $strength_icon = "am-icon-sort";
+        $points_icon = "am-icon-sort";
         $sql_filter .= " ORDER BY `reg_time` DESC,user_id ";
         $accTime = 'AccTime_DESC';
         $regTime = 'RegTime_ASC';
         $strength = 'strength_DESC';
+        $points = 'points_DESC';
         break;
     case 'strength_DESC':
         $acctime_icon = "am-icon-sort";
         $regtime_icon = "am-icon-sort";
         $strength_icon = "am-icon-sort-amount-desc";
+        $points_icon = "am-icon-sort";
         $sql_filter .= " ORDER BY `strength` DESC,user_id ";
         $accTime = 'AccTime_DESC';
         $regTime = 'RegTime_DESC';
         $strength = 'strength_ASC';
+        $points = 'points_DESC';
         break;
     case 'strength_ASC':
         $acctime_icon = "am-icon-sort";
         $regtime_icon = "am-icon-sort";
         $strength_icon = "am-icon-sort-amount-asc";
+        $points_icon = "am-icon-sort";
         $sql_filter .= " ORDER BY `strength`,user_id ";
         $accTime = 'AccTime_DESC';
         $regTime = 'RegTime_DESC';
         $strength = 'strength_DESC';
+        $points = 'points_DESC';
+        break;
+    case 'points_DESC':
+        $acctime_icon = "am-icon-sort";
+        $regtime_icon = "am-icon-sort";
+        $strength_icon = "am-icon-sort";
+        $points_icon = "am-icon-sort-amount-desc";
+        $sql_filter .= " ORDER BY `points` DESC,user_id ";
+        $accTime = 'AccTime_DESC';
+        $regTime = 'RegTime_DESC';
+        $strength = 'strength_DESC';
+        $points = 'points_ASC';
+        break;
+    case 'points_ASC':
+        $acctime_icon = "am-icon-sort";
+        $regtime_icon = "am-icon-sort";
+        $strength_icon = "am-icon-sort";
+        $points_icon = "am-icon-sort-amount-asc";
+        $sql_filter .= " ORDER BY `points`,user_id ";
+        $accTime = 'AccTime_DESC';
+        $regTime = 'RegTime_DESC';
+        $strength = 'strength_DESC';
+        $points = 'points_DESC';
         break;
 }
 $sql_filter .= " LIMIT $left_bound, $page_cnt";
 $view_users = array();
 $cnt = 0;
-$colspan = (isset($OJ_NEED_CLASSMODE) && $OJ_NEED_CLASSMODE) ? 16 : 13;
+$colspan = 13;
+$colspan += (isset($OJ_NEED_CLASSMODE) && $OJ_NEED_CLASSMODE) ? 3 : 0;
+$colspan += (isset($OJ_points_enable)&&$OJ_points_enable) ? 1 : 0;
 if (!isset($_GET['team'])) { //查询普通账号
-    $sql = "SELECT `user_id`,`nick`,`defunct`,`accesstime`,`reg_time`,`ip`,`email`,`school`,`stu_id`,`class`,`real_name`,`strength`,`level` FROM `users` " . $sql_filter;
+    $sql = "SELECT `user_id`,`nick`,`defunct`,`accesstime`,`reg_time`,`ip`,`email`,`school`,`stu_id`,`class`,`real_name`,`strength`,`level`,`points` FROM `users` " . $sql_filter;
     //echo $sql;    
     $result = $mysqli->query($sql);
     while ($row = $result->fetch_object()) {
@@ -189,18 +225,21 @@ if (!isset($_GET['team'])) { //查询普通账号
             }
             $view_users[$cnt][4] = get_group($row->user_id);
         }
-        $view_users[$cnt][8] = round($row->strength);
-        $view_users[$cnt][9] = $row->level;
-        $view_users[$cnt][10] = $row->accesstime;
-        $view_users[$cnt][14] = mb_strlen($row->school, 'utf-8')<=8 ? $row->school : "<div title='$row->school' style='width:150px;white-space: nowrap;text-overflow:ellipsis; overflow:hidden;'>". mb_substr($row->school,0,8,'utf-8')."...</div>";
-        if (isset($OJ_NEED_CLASSMODE) && $OJ_NEED_CLASSMODE) {
-            $view_users[$cnt][16] = $row->real_name;
-            $view_users[$cnt][17] = $row->class;
-            $view_users[$cnt][15] = $row->stu_id;
+        if (isset($OJ_points_enable)&&$OJ_points_enable){
+            $view_users[$cnt][8] = round($row->points,2);
         }
-        $view_users[$cnt][13] = $row->email;
-        $view_users[$cnt][11] = $row->reg_time;
-        $view_users[$cnt][12] = $row->ip;
+        $view_users[$cnt][9] = round($row->strength);
+        $view_users[$cnt][10] = $row->level;
+        $view_users[$cnt][11] = $row->accesstime;
+        $view_users[$cnt][15] = mb_strlen($row->school, 'utf-8')<=8 ? $row->school : "<div title='$row->school' style='width:150px;white-space: nowrap;text-overflow:ellipsis; overflow:hidden;'>". mb_substr($row->school,0,8,'utf-8')."...</div>";
+        if (isset($OJ_NEED_CLASSMODE) && $OJ_NEED_CLASSMODE) {
+            $view_users[$cnt][17] = $row->real_name;
+            $view_users[$cnt][18] = $row->class;
+            $view_users[$cnt][16] = $row->stu_id;
+        }
+        $view_users[$cnt][14] = $row->email;
+        $view_users[$cnt][12] = $row->reg_time;
+        $view_users[$cnt][13] = $row->ip;
         $cnt++;
     }
 } else { //查询比赛临时账号
@@ -372,7 +411,7 @@ if (!isset($_GET['team'])) { //查询普通账号
 <style type="text/css" media="screen">
     #acctime:hover,
     #regtime,
-    #strength:hover {
+    #strength,#points:hover {
         cursor: pointer;
     }
 </style>
@@ -421,6 +460,10 @@ if (!isset($_GET['team'])) { //查询普通账号
                         <th><?php echo $MSG_PRIVILEGE ?></th>
                         <?php if (HAS_PRI("edit_user_profile")) { ?>
                             <th colspan="3" style="text-align: center"><?php echo $MSG_Operations ?></th>
+                        <?php } 
+                        if (isset($OJ_points_enable)&&$OJ_points_enable){
+                        ?>
+                            <th id="points"><?php echo $MSG_points ?>&nbsp;<span class="<?php echo $points_icon ?>"></span></th>
                         <?php } ?>
                         <th id="strength"><?php echo $MSG_STRENGTH ?>&nbsp;<span class="<?php echo $strength_icon ?>"></span></th>
                         <th><?php echo $MSG_LEVEL ?></th>
@@ -592,6 +635,11 @@ require_once("admin-footer.php")
     });
     <?php $args['sort_method'] = $strength; ?>
     $("#strength").click(function() {
+        var link = "<?php echo generate_url(array("page" => "1"), "") ?>";
+        window.location.href = link;
+    });
+    <?php $args['sort_method'] = $points; ?>
+    $("#points").click(function() {
         var link = "<?php echo generate_url(array("page" => "1"), "") ?>";
         window.location.href = link;
     });

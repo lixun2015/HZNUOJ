@@ -66,6 +66,16 @@
   static  $OJ_show_PrinterAndDiscussInContest=true;//是否在比赛页面显示Code Printer和Discuss的链接
   static  $OJ_show_contestSolutionInStatus=false;//是否在status.php中显示contest中提交的代码
 
+  //积分功能
+  static $OJ_points_enable=false;//是否开启积分功能，true开启，false关闭
+  static $OJ_points_reChange=false;//是否开启积分自助充值功能，true开启，false关闭
+  static $OJ_points_submit=1;//提交一次代码扣xx个积分
+  /*--以下三个参数只用于http分布式判题和管理员web端手动判题，本地判题机判题的相关参数设置在judge.conf中--*/
+  static $OJ_points_AC=1;//提交的代码正确奖励xx个积分
+  static $OJ_points_firstAC=1;//提交的代码第一次AC题目奖励xx个积分
+  static $OJ_points_Wrong=0;//提交的代码错误扣除xx积分
+  /*---------------------------------------------------------------------------*/
+
   /* Email configuration */
   static $SMTP_SERVER="smtp.exmail.qq.com";
   static $SMTP_SERVER_PORT=25;

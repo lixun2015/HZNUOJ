@@ -63,9 +63,15 @@ if (isset($_POST['add'])) {
 			$report[$key]['stu_id'] = $stu_id[$key];
 		}
 		$report[$key]['status'] = "Success";
-		if(!preg_match("/^[a-zA-Z0-9]{3,20}$/", $user_id[$key])) {
+		$sql="SELECT `user_id` FROM `users` WHERE `users`.`user_id` = '".$user_id[$key]."'";
+		$result=$mysqli->query($sql);
+		$rows_cnt=$result->num_rows;
+		$result->free();
+		if ($rows_cnt >= 1){
+			$report[$key]['status'] = "<font color='red'><b>Fail</b></font>，普通账号中存在{$user_id[$key]}！";
+		} else if(!preg_match("/^[a-zA-Z0-9]{3,20}$/", $user_id[$key])) {
 			$report[$key]['status'] = "<font color='red'><b>Fail</b></font>，{$MSG_USER_ID}不合规，限3-20位以内的英文字母和数字！";
-		} else if(!preg_match("/^[\u{4e00}-\u{9fa5}_a-zA-Z0-9]{1,60}$/", $nick[$key])) {
+		} else if(!preg_match("/^[\u{4e00}-\u{9fa5}_a-zA-Z0-9]{1,60}$/", $nick[$key]) || mb_strlen( $nick[$key],'utf-8')>20) {
 			$report[$key]['status'] = "<font color='red'><b>Fail</b></font>，{$MSG_NICK}不合规，限20个以内的汉字、字母、数字或下划线！";
 		} else if (isset($OJ_NEED_CLASSMODE) && $OJ_NEED_CLASSMODE) {
 			if (!class_is_exist($class[$key])){				
@@ -124,7 +130,7 @@ SQL;
 			if ($mysqli->affected_rows <= 0) {
 				$report[$key]['status'] = "<font color='red'><b>Fail</b></font>，Unknow Error!";
 			}
-		}
+		} else $report[$key]['password']=" ";
 	}
 ?>
 <title><?php echo $html_title . $MSG_TEAM . $MSG_IMPORT ?></title>

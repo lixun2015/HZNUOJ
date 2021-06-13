@@ -100,6 +100,8 @@
 		  $mysqli->query($sql);
 		  $sql = "UPDATE contest SET user_id='$dest' WHERE user_id='$origin'";
 		  $mysqli->query($sql);
+		  $sql = "UPDATE points_log SET user_id='$dest' WHERE user_id='$origin'";
+		  $mysqli->query($sql);
 		  //$sql = "UPDATE contest_discuss SET user_id='$dest' WHERE user_id='$origin'";
 		  //$mysqli->query($sql);
 		  //$sql = "UPDATE printer_code SET user_id='$dest' WHERE user_id='$origin'";

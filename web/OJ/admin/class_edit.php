@@ -165,17 +165,18 @@ if (isset($_GET['del'])) { //删除班级信息
   $err_cnt = 0;
   $old_name = trim($mysqli->real_escape_string($_POST['cid']));
   $new_name = htmlspecialchars(trim($mysqli->real_escape_string($_POST['new_name'])));
-  if ($new_name == $old_name) {
-    $err_str .= "相同的{$MSG_Class_Name}！\\n";
-    $err_cnt++;
-  } else if (!class_is_exist($old_name)) {
+  $points = $_POST['points'];
+  if (!class_is_exist($old_name)) {
     $err_str .= "原{$MSG_Class_Name}不存在！\\n";
     $err_cnt++;
-  } else if (class_is_exist($new_name)) {
+  } else if ($new_name != $old_name && class_is_exist($new_name)) {
     $err_str .= "输入的$MSG_New{$MSG_Class_Name}有重名！\\n";
     $err_cnt++;
-  } else if (!preg_match("/^[\u{4e00}-\u{9fa5}_+a-zA-Z0-9]{1,60}$/", $new_name)) { //{1,60} 60=3*20，一个utf-8汉字占3字节
+  } else if (!preg_match("/^[\u{4e00}-\u{9fa5}_+a-zA-Z0-9]{1,60}$/", $new_name) || mb_strlen($new_name, 'utf-8')>20) {
     $err_str = $err_str . "输入的{$MSG_Class_Name}限20个以内的汉字、字母、数字或下划线、+ ！\\n";
+    $err_cnt++;
+  } else if (isset($OJ_points_enable)&&$OJ_points_enable && is_numeric($points) && ($points<0 || $points>1000)){
+    $err_str = $err_str . "输入的{$MSG_InitialPoints}限0~1000范围内！\\n";
     $err_cnt++;
   }
   if ($err_cnt > 0) {
@@ -198,13 +199,15 @@ if (isset($_GET['del'])) { //删除班级信息
     $sql = "UPDATE `reg_code` SET `class_name`='$new_name' WHERE `class_name`='$old_name'";
     $mysqli->query($sql);
   }
-  $sql = "UPDATE `class_list` SET `class_name`='$new_name' WHERE `class_name`='$old_name'";
+  if (isset($OJ_points_enable)&&$OJ_points_enable){
+    $sql = "UPDATE `class_list` SET `class_name`='$new_name', `give_points`= $points WHERE `class_name`='$old_name'";
+  } else $sql = "UPDATE `class_list` SET `class_name`='$new_name' WHERE `class_name`='$old_name'";
+  
   $mysqli->query($sql);
-  if ($mysqli->affected_rows) {
-    $result = "编辑成功！";
-  } else $result = "No such Class";
   echo "<script language='javascript'>\n";
-  echo "alert('$result');";
+  if ($mysqli->affected_rows) {
+    echo "alert('编辑成功！');";
+  }
   echo "window.location.href='" . generate_url("") . "';";
   echo "</script>";
   exit(0);
@@ -219,6 +222,7 @@ $result = $mysqli->query($sql);
 $row = $result->fetch_object();
 $view_class['class_name'] = $row->class_name;
 $view_class['enrollment_year'] = $row->enrollment_year;
+$view_class['give_points'] = $row->give_points;
 $result->free();
 
 ?>
@@ -250,6 +254,14 @@ $result->free();
         <input type="text" style="width:340px;" maxlength="20" id="new_name" name="new_name" value="<?php echo $view_class['class_name'] ?>" placeholder="限20个以内的汉字、字母、数字、下划线及加号" pattern="^[\u4e00-\u9fa5_+a-zA-Z0-9]{1,20}$" required />
       </div>
     </div>
+    <?php if (isset($OJ_points_enable)&&$OJ_points_enable){ ?>
+    <div class="am-form-group" style="white-space: nowrap;">
+      <label class="am-u-sm-2 am-u-sm-offset-2 am-form-label"><?php echo $MSG_InitialPoints ?>:</label>
+      <div class="am-u-sm-8">
+        <input type="number" style="width:340px;" maxlength="20" id="points" name="points" value="<?php echo round($view_class['give_points'],2) ?>" min="0.0" max="1000.0" step="0.1" required />
+      </div>
+    </div>
+    <?php } ?>
     <div class="am-form-group">
       <div class="am-u-sm-8 am-u-sm-offset-4">
         <input type="submit" value="<?php echo $MSG_SUBMIT ?>" name="save" class="am-btn am-btn-success">&nbsp;

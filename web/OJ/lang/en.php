@@ -38,6 +38,13 @@
   $MSG_LOSTPASSWORD_HELP2="Input the ".$MSG_Securekey." sended to your email (may be in Trash Box). if it's correct, it will be the new password.";
   $MSG_RESETPASSWORD_SUCC="Password has been reseted to the ".$MSG_Securekey." you've just inputed. Click <a href='loginpage.php'>here</a> to login!";
   $MSG_RESETPASSWORD_FAIL="Password Reset Failed.";
+  $MSG_points=" Points ";
+  $MSG_Recharge="Recharge";
+  $MSG_InitialPoints="Initial Points";
+  $MSG_PointsHistory="Points History";
+  $MSG_Income = "Income";
+  $MSG_Expenditure ="Expenditure";
+  $MSG_Operator ="Operator";
 
   // 比赛导航栏
   $MSG_BACK_TO_HOME = "Back To Home";
@@ -191,7 +198,7 @@
   $MSG_EMAIL="Email";
   $MSG_REG_INFO="Register Information";
   $MSG_VCODE="Verify Code";
-  $MSG_REG_CODE="Register Code";
+  $MSG_REG_CODE="Invite Code";
   $MSG_Remain_Num="Remain Num";
 
   //problem.php

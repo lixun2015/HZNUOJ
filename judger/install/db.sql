@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `problem` (
   `author` varchar(30) DEFAULT NULL,
   `source` varchar(100) DEFAULT NULL,
   `in_date` datetime DEFAULT NULL,
-  `time_limit` int(11) NOT NULL DEFAULT '0',
+  `time_limit` DECIMAL(10,3) NOT NULL DEFAULT 0,
   `memory_limit` int(11) NOT NULL DEFAULT '0',
   `defunct` char(1) NOT NULL DEFAULT 'N',
   `accepted` int(11) DEFAULT '0',
@@ -335,6 +335,7 @@ CREATE TABLE IF NOT EXISTS `solution` (
   `judgetime` datetime DEFAULT NULL,
   `pass_rate` decimal(3,2) unsigned NOT NULL DEFAULT '0.00',
   `judger` char(16) NOT NULL DEFAULT 'LOCAL',
+  `lastresult` smallint(6) NOT NULL DEFAULT '0',
   PRIMARY KEY (`solution_id`),
   KEY `pid` (`problem_id`),
   KEY `res` (`result`),
@@ -454,6 +455,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `dislike` int(9) DEFAULT '0',
   `tag` varchar(250) DEFAULT NULL,
   `access_level` tinyint NOT NULL DEFAULT 0,
+  `points` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -484,6 +486,7 @@ CREATE TABLE IF NOT EXISTS `users_cache_array` (
 CREATE TABLE IF NOT EXISTS `class_list` (
   `class_name` varchar(100) NOT NULL,
   `enrollment_year` smallint(4) NOT NULL,
+  `give_points` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`class_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -520,6 +523,19 @@ INSERT INTO `course` VALUES ('8', '计算题入门', '2', '1', '0');
 INSERT INTO `course` VALUES ('9', '分支结构入门', '3', '1', '0');
 INSERT INTO `course` VALUES ('10', '循环结构入门', '4', '1', '0');
 INSERT INTO `course` VALUES ('11', '1000', '0', '6', '1');
+
+CREATE TABLE IF NOT EXISTS `points_log` (
+  `index` int(11) NOT NULL AUTO_INCREMENT,
+  `item` varchar(100) NOT NULL,
+  `operator` varchar(48) NOT NULL DEFAULT '',
+  `user_id` varchar(48) NOT NULL DEFAULT '',
+  `solution_id` int(11) NOT NULL DEFAULT '0',
+  `pay_type` tinyint(4) NOT NULL,
+  `pay_points` DECIMAL(10,2) NOT NULL,
+  `pay_time` DATETIME NOT NULL,
+  PRIMARY KEY (`index`),
+  KEY `solution_id` (`solution_id`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- 添加触发器，防止同一用户类似代码提交第二遍时被认定为抄袭
 delimiter //

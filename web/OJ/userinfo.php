@@ -38,7 +38,7 @@
 
   require_once("./include/rank.inc.php");
   updateRank($user_mysql);
-  $sql="SELECT `school`,`email`,`nick`,`level`,`color`,`strength`,`real_name`,`class`,`stu_id`,`defunct` FROM `users` WHERE `user_id`='$user_mysql'";
+  $sql="SELECT `school`,`email`,`nick`,`level`,`color`,`strength`,`real_name`,`class`,`stu_id`,`defunct`,`points` FROM `users` WHERE `user_id`='$user_mysql'";
 
   $result=$mysqli->query($sql);
   $row_cnt=$result->num_rows;
@@ -63,6 +63,7 @@
   }
   $level=$row->level;
   $strength=$row->strength;
+  $userpoints=$row->points;
   $result->free();
  
   //get ac set 

@@ -63,7 +63,7 @@ if (isset($_POST['add'])) {
             $sql = "SELECT COUNT(*) FROM `users` WHERE `user_id` = '{$user_id[$key]}'";
             if ($mysqli->query($sql)->fetch_array()[0] > 0) {
                 $report[$key]['status'] = "<font color='red'><b>Fail</b></font>，{$MSG_USER_ID}有重名！";
-            } else if (!preg_match("/^[\u{4e00}-\u{9fa5}_a-zA-Z0-9]{1,60}$/", $nick[$key])) {
+            } else if (!preg_match("/^[\u{4e00}-\u{9fa5}_a-zA-Z0-9]{1,60}$/", $nick[$key]) || mb_strlen($nick[$key], 'utf-8')>20) {
                 $report[$key]['status'] = "<font color='red'><b>Fail</b></font>，{$MSG_NICK}不合规，限20个以内的汉字、字母、数字或下划线！";
             } else if ($email[$key] && !preg_match("/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/", $email[$key])) {
                 $report[$key]['status'] = "<font color='red'><b>Fail</b></font>，{$MSG_EMAIL}不合规，格式不对 ！";
@@ -78,6 +78,14 @@ if (isset($_POST['add'])) {
             }
         }
         if ($report[$key]['status'] == "Success") {
+            $give_points=0;
+            if (isset($OJ_points_enable) && $OJ_points_enable) {
+                $sql="SELECT `give_points` FROM `class_list` WHERE `class_name`='{$class[$key]}'";
+                $result = $mysqli->query($sql);
+                if($row = $result->fetch_object()){
+                    $give_points=$row->give_points;
+                }
+            }
             $pass_hash = pwGen($password[$key]);
             $sql = <<<SQL
                     INSERT INTO users (
@@ -90,7 +98,8 @@ if (isset($_POST['add'])) {
                         `email`,
                         `password`,
                         `ip`,
-                        `reg_time`
+                        `reg_time`,
+                        `points`
                     )
                     VALUES
                     (
@@ -103,13 +112,19 @@ if (isset($_POST['add'])) {
                         '{$email[$key]}',
                         '$pass_hash',
                         '{$_SERVER['REMOTE_ADDR']}',
-                        NOW()
+                        NOW(),
+                        $give_points
                     )
 SQL;
             //echo "<pre>$sql</pre>";
+            $operator = $mysqli->real_escape_string($_SESSION['user_id']);
             $mysqli->query($sql);
             if ($mysqli->affected_rows <= 0) {
                 $report[$key]['status'] = "<font color='red'><b>Fail</b></font>，Unknow Error!";
+            } else if($give_points>0) {
+                $sql="INSERT INTO `points_log`(`item`,`operator`,`user_id`, `pay_type`, `pay_points`,`pay_time` ) ";
+                $sql.="VALUES('账号批量导入$MSG_InitialPoints','$operator','$user_id[$key]',3, $give_points, NOW())";//插入积分日志
+                $mysqli->query($sql);
             }
         }
     }

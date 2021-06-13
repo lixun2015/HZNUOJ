@@ -93,11 +93,11 @@
   $len=strlen($nick);
   if ($len==0){
     $nick=$user_id;
-  } else if(!preg_match("/^[\u{4e00}-\u{9fa5}_a-zA-Z0-9]{1,60}$/", $nick)) { //{1,60} 60=3*20，一个utf-8汉字占3字节
+  } else if(!preg_match("/^[\u{4e00}-\u{9fa5}_a-zA-Z0-9]{1,60}$/", $nick) || mb_strlen($nick, 'utf-8')>20) {
     $err_str=$err_str."输入的{$MSG_NICK}限20个以内的汉字、字母、数字或下划线 ！\\n";
     $err_cnt++;
   } 
-  if(!preg_match("/^[\u{4e00}-\u{9fa5}a-zA-Z0-9]{0,60}$/", $school)) { //
+  if(!preg_match("/^[\u{4e00}-\u{9fa5}a-zA-Z0-9]{0,60}$/", $school) || mb_strlen($school, 'utf-8')>20) { //
     $err_str=$err_str."输入的{$MSG_SCHOOL}限20个以内的汉字、字母或数字 ！\\n";
     $err_cnt++;
   }
@@ -159,11 +159,22 @@
   } else {
 	  $defunct="N";
   }
+  $give_points=0;
+  if (isset($OJ_points_enable) && $OJ_points_enable) {
+    $sql="SELECT `give_points` FROM `class_list` WHERE `class_name`='$class'";
+    $result = $mysqli->query($sql);
+    if($row = $result->fetch_object()) $give_points=$row->give_points;
+  }
   $sql="INSERT INTO `users`("
-  ."`user_id`,`email`,`defunct`,`ip`,`password`,`reg_time`,`nick`,`school`,class, stu_id, real_name)"
-  ."VALUES('".$user_id."','".$email."','".$defunct."','".$_SERVER['REMOTE_ADDR']."','".$password."',NOW(),'".$nick."','".$school."','".$class."','".$stu_id."','".$real_name."')";
+  ."`user_id`,`email`,`defunct`,`ip`,`password`,`reg_time`,`nick`,`school`,`class`, `stu_id`, `real_name`, `points`)"
+  ."VALUES('".$user_id."','".$email."','".$defunct."','".$_SERVER['REMOTE_ADDR']."','".$password."',NOW(),'".$nick."','".$school."','".$class."','".$stu_id."','".$real_name."', $give_points)";
 
   $mysqli->query($sql) or die ($mysqli->error);
+  if($give_points>0) {
+    $sql="INSERT INTO `points_log`(`item`,`user_id`, `pay_type`, `pay_points`,`pay_time` ) ";
+    $sql.="VALUES('账号注册$MSG_InitialPoints','$user_id',3,$give_points, NOW())";//插入积分日志
+    $mysqli->query($sql);
+  }
   $msg = "注册成功！";
   $sql="INSERT INTO `loginlog` VALUES('$user_id','$password','$ip',NOW())";
   $mysqli->query($sql);

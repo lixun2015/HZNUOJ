@@ -16,6 +16,22 @@
   else
     require_once("contest_header.php");
   require_once "include/const.inc.php";
+  if(isset($OJ_points_submit)){
+    $points_pay = $OJ_points_submit;
+  } else {
+    $points_pay = 1;
+  }
+  if (isset($OJ_points_enable) && $OJ_points_enable && !IS_ADMIN($_SESSION['user_id']) && !isset($_SESSION['contest_id']) ){ //还要不是比赛用户isset($_SESSION['user_id']) && !isset($_SESSION['contest_id'])
+    if( $points < 0){
+      $view_errors= "<a href='./points_rechange.php'>余额不足，当前剩余 ".round($points,2)." <span class='am-icon-apple'></span>，请点击此处{$MSG_Recharge}{$MSG_points}。</a>";
+      require("template/".$OJ_TEMPLATE."/error.php");
+      exit(0);
+    } else if($points < $points_pay){
+      $view_errors= "<a href='./points_rechange.php'>提交一次代码需扣除 $points_pay <span class='am-icon-apple'></span>，当前剩余 ".round($points,2)." <span class='am-icon-apple'></span>，请点击此处{$MSG_Recharge}{$MSG_points}。</a>";
+      require("template/".$OJ_TEMPLATE."/error.php");
+      exit(0);
+    }
+  }
 ?>
 <div class="am-container" style="padding-top: 20px;">
   <?php
@@ -25,7 +41,31 @@
   else {
       $title = "Problem <strong>$id</strong>";
   }
- 
+  if (isset($OJ_points_enable)&&$OJ_points_enable && !isset($_SESSION['contest_id'])){
+    $title .= "&nbsp;&nbsp;【当前{$MSG_points}：".round($points,2)." <span class='am-icon-apple'></span>】";
+    if(isset($OJ_points_AC)){
+      $points_AC = $OJ_points_AC;
+    } else {
+      $points_AC = 1;
+    }
+    if(isset($OJ_points_firstAC)){
+      $points_firstAC = $OJ_points_firstAC;
+    } else {
+      $points_firstAC = 1;
+    }
+    if(isset($OJ_points_Wrong)){
+      $points_Wrong = $OJ_points_Wrong;
+    } else {
+      $points_Wrong = 0;
+    }
+    $title .= "<br>提交一次代码将扣除 $points_pay <span class='am-icon-apple'></span>；提交代码正确，奖励 $points_AC <span class='am-icon-apple'></span>";
+    if($points_firstAC!=$points_AC){
+      $title .= "；若是第一次AC该题，再奖励 ".($points_firstAC-$points_AC)."<span class='am-icon-apple'></span>";
+    }
+    if($points_Wrong != 0){
+      $title .= "；若提交代码错误，加罚 ".$points_Wrong."<span class='am-icon-apple'></span>";
+    }
+  }
   ?>
   <div class="am-g">
     <script src="include/checksource.js"></script>
