@@ -95,3 +95,5 @@ CREATE TABLE IF NOT EXISTS `points_log` (
   KEY `solution_id` (`solution_id`) USING BTREE
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 ALTER TABLE `class_list` ADD `give_points` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `enrollment_year`;
+ALTER TABLE `users` ADD `activateCode` VARCHAR(48) NOT NULL DEFAULT '' AFTER `points`;
+ALTER TABLE `users` ADD `activateTimelimit` datetime DEFAULT NULL AFTER `activateCode`;

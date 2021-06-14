@@ -456,6 +456,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `tag` varchar(250) DEFAULT NULL,
   `access_level` tinyint NOT NULL DEFAULT 0,
   `points` decimal(10,2) DEFAULT '0.00',
+  `activateCode` varchar(48) NOT NULL DEFAULT '',
+  `activateTimelimit` datetime DEFAULT NULL
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 

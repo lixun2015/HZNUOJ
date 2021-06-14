@@ -307,6 +307,7 @@
   $MSG_HELP_RegCode_ComfirmMode="Current mode is Comfirm Mode,everyone can register account, but the account must be activated by administrator.";
   $MSG_HELP_RegCode_PwdMode="Current mode is Password Mode,only someone who have a register code created by administrator can register account, and system will activate account automatically.";
   $MSG_HELP_RegCode_PwdComfirmMode="Current mode is Password+Comfirm Mode, only someone who have a register code created by administrator can register account, but the account must be activated by administrator.";
+  $MSG_HELP_RegCode_PwdEmailMode="Current mode is Password+Comfirm Mode, only someone who have a register code created by administrator can register account, but the account must be activated by eamil.";
   $MSG_HELP_ADD_PROBLEM="add new problem,multi test cases can be added after problem added ,using TestData button on the Problem List";
   $MSG_HELP_PROBLEM_LIST="manage existing problems, test case files can be uploaded within a zip file and decompress later";
   $MSG_HELP_CONTEST_LIST="The existing list of contests, modification time and public / private……, try not to adjust the list of items after the start.";

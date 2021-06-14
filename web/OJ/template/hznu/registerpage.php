@@ -93,11 +93,11 @@
         <font color='red'><b>*</b></font>&nbsp;<?php echo $MSG_EMAIL ?>:
       </label>
       <div class="am-u-sm-8 parentCls">
-        <input class="inputElem" type="email" id="email" value="" name="email" style="width:300px;" placeholder="<?php echo $MSG_EMAIL?>" autocomplete="off" 
+        <input class="inputElem" type="email" id="email" value="" name="email" style="width:300px;" placeholder="用于密码取回<?php if (isset($OJ_REG_NEED_CONFIRM) && $OJ_REG_NEED_CONFIRM=="pwd+email") echo "、账号激活"; ?>" autocomplete="off" 
           required/>
       </div>
     </div>
-    <?php if (isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="pwd" || $OJ_REG_NEED_CONFIRM=="pwd+confirm")) { ?>
+    <?php if (isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="pwd" || $OJ_REG_NEED_CONFIRM=="pwd+confirm" || $OJ_REG_NEED_CONFIRM=="pwd+email")) { ?>
     <div class="am-form-group">
       <label for="regcode" class="am-u-sm-4 am-form-label"><font color='red'><b>*</b></font>&nbsp;<?php echo $MSG_REG_CODE ?>: </label>
 		<div class="am-u-sm-8">

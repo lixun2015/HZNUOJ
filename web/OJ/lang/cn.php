@@ -307,6 +307,7 @@
   $MSG_HELP_RegCode_ComfirmMode="当前系统设定为审核模式，注册无限制，账号注册后需要管理员后台审核激活。";
   $MSG_HELP_RegCode_PwdMode="当前系统设定为密码模式，人员凭后台设置的注册码进行注册，账号注册后立即激活。";
   $MSG_HELP_RegCode_PwdComfirmMode="当前系统设定为密码+审核模式，人员凭后台设置的注册码进行注册，账号注册后还需管理员后台审核激活。";
+  $MSG_HELP_RegCode_PwdEmailMode="当前系统设定为密码+邮件模式，人员凭后台设置的注册码进行注册，账号注册后还需电子邮件激活。";
   $MSG_HELP_ADD_PROBLEM="手动添加新的题目，更多测试数据可以在添加后点击".$MSG_PROBLEM.$MSG_LIST."中的'".$MSG_TestData."'按钮进行批量上传，新建题目<b>默认".$MSG_Reserved."</b>，需点击".$MSG_PROBLEM.$MSG_LIST."中对应的<b>'".$MSG_Reserved."'</b>切换到启用状态。";
   $MSG_HELP_PROBLEM_LIST="管理已有的题目和数据，上传测试数据可以用zip格式压缩不含目录的数据。";
   $MSG_HELP_CONTEST_LIST="管理已有的比赛列表，修改时间和公开/私有等类型，尽量不要在开赛后调整题目列表。";

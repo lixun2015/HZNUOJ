@@ -291,6 +291,9 @@ if (isset($OJ_NEED_CLASSMODE) && $OJ_NEED_CLASSMODE) {
             case "pwd+confirm";
                 echo $MSG_HELP_RegCode_PwdComfirmMode;
                 break;
+            case "pwd+email";
+                echo $MSG_HELP_RegCode_PwdEmailMode;
+                break;
         }
     } else echo $MSG_HELP_RegCode_OpenMode;
     ?>

@@ -7,7 +7,33 @@
 ?>
 
 <?php
-  require_once "include/check_post_key.php";
+  if(isset($_GET['code'])){
+	  require_once("./include/db_info.inc.php");
+    $code=$mysqli->real_escape_string(trim($_GET['code']));
+    $sql="SELECT `user_id`, `activateCode` FROM `users` WHERE `activateCode`='$code' AND `defunct`='Y' AND `activateTimelimit`>=NOW()";
+    $result = $mysqli->query($sql);
+    $msg ="";
+    if($row = $result->fetch_object()){
+			if($row->activateCode==$code){
+        $sql="UPDATE `users` SET `defunct`='N', `activateTimelimit`=NOW() WHERE `user_id`='{$row->user_id}'";
+        $mysqli->query($sql);
+        if ($mysqli->affected_rows) {
+          $msg ="succ";
+        }
+      }
+    }
+    echo "<script language='javascript'>\n";
+    if($msg=="succ"){
+      echo "alert('激活成功，点击确定登录账号。');\n";
+      echo "window.location.href='index.php';";
+    } else {
+      $msg = "抱歉，此账户激活链接已经失效。可能你的账户已经被激活或者超过激活期限了？";
+      echo "alert('$msg');\n";
+    }
+    echo "</script>";
+    exit(0);
+  }
+  require_once("include/check_post_key.php");
   require_once("./include/db_info.inc.php");
   require_once('./include/setlang.php');
   require_once("./include/my_func.inc.php");
@@ -20,7 +46,7 @@
   $stu_id="";
   $real_name="";
   //验证注册码
-  if (isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="pwd" || $OJ_REG_NEED_CONFIRM=="pwd+confirm")) {
+  if (isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="pwd" || $OJ_REG_NEED_CONFIRM=="pwd+confirm" || $OJ_REG_NEED_CONFIRM=="pwd+email")) {
     $err_str = "";
     $err_str_prefix = "";
     if (isset($OJ_NEED_CLASSMODE)&&$OJ_NEED_CLASSMODE) {
@@ -119,10 +145,16 @@
   if ($len>100){
     $err_str=$err_str."输入的电子邮箱地址过长！\\n";//$err_str=$err_str."Email Too Long!\\n";
     $err_cnt++;
-  }
-  if(!preg_match("/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/", $email)) {
-	$err_str=$err_str."输入的电子邮箱地址不合法！\\n";//$err_str=$err_str."Email Illegal!\\n";
+  } else if(!preg_match("/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/", $email)) {
+	  $err_str=$err_str."输入的电子邮箱地址不合法！\\n";//$err_str=$err_str."Email Illegal!\\n";
     $err_cnt++;
+  } else {
+    $sql="SELECT count(`email`) e FROM `users` WHERE `email`='$email'";
+    $result = $mysqli->query($sql);
+    if($result->fetch_object()->e > 0){
+      $err_str=$err_str.$email."已被注册！\\n";
+      $err_cnt++;
+    }
   }
   if ($err_cnt>0){
     print "<script language='javascript'>\n";
@@ -154,7 +186,7 @@
     $tmp_ip=explode(',',$REMOTE_ADDR);
     $ip =(htmlentities($tmp_ip[0],ENT_QUOTES,"UTF-8"));
   }
-  if(isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="on" || $OJ_REG_NEED_CONFIRM=="pwd+confirm")) {
+  if(isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="on" || $OJ_REG_NEED_CONFIRM=="pwd+confirm" || $OJ_REG_NEED_CONFIRM=="pwd+email")) {
 	  $defunct="Y";
   } else {
 	  $defunct="N";
@@ -176,10 +208,38 @@
     $mysqli->query($sql);
   }
   $msg = "注册成功！";
-  $sql="INSERT INTO `loginlog` VALUES('$user_id','$password','$ip',NOW())";
+  $sql="INSERT INTO `loginlog`(`user_id`,`password`,`ip`,`time`) VALUES('$user_id','register','$ip',NOW())";
   $mysqli->query($sql);
   if(isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="on" || $OJ_REG_NEED_CONFIRM=="pwd+confirm")){
     $msg = $msg."\\n请联系管理员审核通过！";
+  } else if(isset($OJ_REG_NEED_CONFIRM) && $OJ_REG_NEED_CONFIRM=="pwd+email"){
+    $msg .= "\\请于48小时内登录邮箱{$email}查看邮件，确认账号并激活！";
+    $activateCode = createPwd("", 30, false);
+    $sql="UPDATE `users` SET `activateCode`='$activateCode',`activateTimelimit`=DATE_ADD(now(), Interval 2 day) WHERE `user_id`='$user_id'";
+    $mysqli->query($sql);
+    require_once "include/email.class.php";
+        //******************** 配置信息 ********************************
+        $smtpserver = $SMTP_SERVER;//SMTP服务器
+        $smtpserverport = $SMTP_SERVER_PORT;//SMTP服务器端口
+        $smtpusermail = $SMTP_USER;//SMTP服务器的用户邮箱
+        $smtpemailto = $email;//发送给谁
+        $smtpuser = $SMTP_USER;//SMTP服务器的用户帐号
+        $smtppass = $SMTP_PASS;//SMTP服务器的用户密码
+        $mailtitle = $OJ_NAME." 确认你的新账号--系统邮件请勿回复";//邮件主题
+        $mailcontent = "<p>欢迎来到".$OJ_NAME."</p>";
+        $mailcontent .= "<p>点击下面链接确认并激活你的新账户：<br>";
+        $URL="http://".$_SERVER['HTTP_HOST'];
+        if($_SERVER["SERVER_PORT"]!="80"){
+          $URL.=":".$_SERVER["SERVER_PORT"];
+        }
+        $URL.="/register.php?code=".$activateCode;
+        $mailcontent .="<a href='$URL' target='_blank' style='text-decoration: none; font-weight: bold; color: #006699;' rel='noopener' > $URL </a></p>";
+        $mailcontent .= "<p>如果以上链接无法点击，请将它复制并粘贴到你的浏览器的地址栏。</p>";//邮件内容
+        $mailtype = "HTML";//邮件格式（HTML/TXT）,TXT为文本邮件
+        //************************ 配置信息 ****************************
+        $smtp = new smtp($smtpserver,$smtpserverport,true,$smtpuser,$smtppass);//这里面的一个true是表示使用身份验证,否则不使用身份验证.
+        $smtp->debug =false;//是否显示发送的调试信息
+        $state = $smtp->sendmail($smtpemailto, $smtpusermail, $mailtitle, $mailcontent, $mailtype);
   } else {    
 	  $sql="UPDATE `users` SET `accesstime`=NOW() WHERE `user_id`='$user_id'";
     $mysqli->query($sql);
@@ -195,7 +255,7 @@
     $_SESSION['ac']=Array();
     $_SESSION['sub']=Array();
   }
-  if (isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="pwd" || $OJ_REG_NEED_CONFIRM=="pwd+confirm")) {
+  if (isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="pwd" || $OJ_REG_NEED_CONFIRM=="pwd+confirm" || $OJ_REG_NEED_CONFIRM=="pwd+email")) {
     //注册完成，该班级的注册名额减1
     if ($reg_code->reg_code != -1) {// $reg_code->reg_code == -1 表示注册名额不限次数
       $sql = "UPDATE`reg_code` SET `remain_num`=`remain_num`-1 WHERE `class_name`='$reg_code->class_name' AND `remain_num`>'0'";
