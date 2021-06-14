@@ -15,9 +15,9 @@
     $msg ="";
     if($row = $result->fetch_object()){
 			if($row->activateCode==$code){
-        $sql="UPDATE `users` SET `defunct`='N', `activateTimelimit`=NOW() WHERE `user_id`='{$row->user_id}'";
+        $sql="UPDATE `users` SET `defunct`='N', `activateTimelimit`=NOW() WHERE `activateCode`='$code' AND `user_id`='{$row->user_id}'";
         $mysqli->query($sql);
-        if ($mysqli->affected_rows) {
+        if ($mysqli->affected_rows>0) {
           $msg ="succ";
         }
       }
@@ -25,11 +25,11 @@
     echo "<script language='javascript'>\n";
     if($msg=="succ"){
       echo "alert('激活成功，点击确定登录账号。');\n";
-      echo "window.location.href='index.php';";
     } else {
-      $msg = "抱歉，此账户激活链接已经失效。可能你的账户已经被激活或者超过激活期限了？";
-      echo "alert('$msg');\n";
+      echo "alert('抱歉，此账户激活链接已经失效。可能你的账户已经被激活或者超过激活期限了？');\n";
     }
+    $_SESSION['gotoIndex'] = true;
+    echo "window.location.href='loginpage.php';";
     echo "</script>";
     exit(0);
   }
@@ -207,39 +207,53 @@
     $sql.="VALUES('账号注册$MSG_InitialPoints','$user_id',3,$give_points, NOW())";//插入积分日志
     $mysqli->query($sql);
   }
-  $msg = "注册成功！";
+  $msg = "账号注册成功！";
   $sql="INSERT INTO `loginlog`(`user_id`,`password`,`ip`,`time`) VALUES('$user_id','register','$ip',NOW())";
   $mysqli->query($sql);
   if(isset($OJ_REG_NEED_CONFIRM) && ($OJ_REG_NEED_CONFIRM=="on" || $OJ_REG_NEED_CONFIRM=="pwd+confirm")){
     $msg = $msg."\\n请联系管理员审核通过！";
   } else if(isset($OJ_REG_NEED_CONFIRM) && $OJ_REG_NEED_CONFIRM=="pwd+email"){
-    $msg .= "\\请于48小时内登录邮箱{$email}查看邮件，确认账号并激活！";
     $activateCode = createPwd("", 30, false);
-    $sql="UPDATE `users` SET `activateCode`='$activateCode',`activateTimelimit`=DATE_ADD(now(), Interval 2 day) WHERE `user_id`='$user_id'";
+    $sql="UPDATE `users` SET `activateCode`='$activateCode',`activateTimelimit`=DATE_ADD(now(), Interval 1 day) WHERE `user_id`='$user_id'";
     $mysqli->query($sql);
-    require_once "include/email.class.php";
-        //******************** 配置信息 ********************************
-        $smtpserver = $SMTP_SERVER;//SMTP服务器
-        $smtpserverport = $SMTP_SERVER_PORT;//SMTP服务器端口
-        $smtpusermail = $SMTP_USER;//SMTP服务器的用户邮箱
-        $smtpemailto = $email;//发送给谁
-        $smtpuser = $SMTP_USER;//SMTP服务器的用户帐号
-        $smtppass = $SMTP_PASS;//SMTP服务器的用户密码
-        $mailtitle = $OJ_NAME." 确认你的新账号--系统邮件请勿回复";//邮件主题
-        $mailcontent = "<p>欢迎来到".$OJ_NAME."</p>";
-        $mailcontent .= "<p>点击下面链接确认并激活你的新账户：<br>";
-        $URL="http://".$_SERVER['HTTP_HOST'];
-        if($_SERVER["SERVER_PORT"]!="80"){
-          $URL.=":".$_SERVER["SERVER_PORT"];
-        }
-        $URL.="/register.php?code=".$activateCode;
-        $mailcontent .="<a href='$URL' target='_blank' style='text-decoration: none; font-weight: bold; color: #006699;' rel='noopener' > $URL </a></p>";
-        $mailcontent .= "<p>如果以上链接无法点击，请将它复制并粘贴到你的浏览器的地址栏。</p>";//邮件内容
-        $mailtype = "HTML";//邮件格式（HTML/TXT）,TXT为文本邮件
-        //************************ 配置信息 ****************************
-        $smtp = new smtp($smtpserver,$smtpserverport,true,$smtpuser,$smtppass);//这里面的一个true是表示使用身份验证,否则不使用身份验证.
-        $smtp->debug =false;//是否显示发送的调试信息
-        $state = $smtp->sendmail($smtpemailto, $smtpusermail, $mailtitle, $mailcontent, $mailtype);
+    //******************** 发送激活邮件 ********************************
+    require("plugins/PHPMailer/PHPMailerAutoload.php");
+    require_once("plugins/PHPMailer/class.phpmailer.php");
+    require_once("plugins/PHPMailer/class.smtp.php");
+    $mailcontent = "<p>欢迎来到".$OJ_NAME."！</p>";
+    $mailcontent .= "<p>点击下面链接确认并激活你的新账户：<br>";
+    $URL="http://".$_SERVER['HTTP_HOST'];
+    if($_SERVER["SERVER_PORT"]!="80"){
+      $URL.=":".$_SERVER["SERVER_PORT"];
+    }
+    $URL.="/register.php?code=".$activateCode;
+    $mailcontent .="<a href='$URL' target='_blank' style='text-decoration: none; font-weight: bold; color: #006699;' rel='noopener' > $URL </a></p>";
+    $mailcontent .= "<p>如果以上链接无法点击，请将它复制并粘贴到你的浏览器的地址栏。</p>";
+    $mailcontent .= "<p>注意：请您在收到邮件24小时内使用，否则该链接将会失效。</p>";//邮件内容
+    $mail = new PHPMailer();
+    //$mail->SMTPDebug = 2;
+    $mail->CharSet = "UTF-8";        //设定邮件编码，默认ISO-8859-1，如果发中文此项必须设置为 UTF-8
+    $mail->IsSMTP();                 // 设定使用SMTP服务
+    $mail->SMTPAuth = true;          // 启用 SMTP 验证功能
+    $mail->Host = $SMTP_SERVER;      // SMTP 服务器
+    $mail->Port = $SMTP_SERVER_PORT; // SMTP服务器的端口号
+    if($mail->Port!=25) {
+      $mail->SMTPSecure = "ssl";     // 非25端口就启用SSL
+    }
+    $mail->Username   = $SMTP_USER;  // SMTP服务器用户名
+    $mail->Password   = $SMTP_PASS;  // SMTP服务器密码
+    $mail->SetFrom($mail->Username, $OJ_NAME);    // 设置发件人地址和名称
+    $mail->AddReplyTo($mail->Username,$OJ_NAME);  // 设置邮件回复人地址和名称
+    $mail->Subject = $OJ_NAME." 确认你的新账号--系统邮件请勿回复";    // 设置邮件标题
+    $mail->AltBody = "为了查看该邮件，请切换到支持 HTML 的邮件客户端"; // 可选项，向下兼容考虑
+    $mail->MsgHTML($mailcontent);                 // 设置邮件内容
+    $mail->AddAddress($email);//收件人
+    if(!$mail->Send()) {
+      $msg .= "\\n邮件发送失败，请联系管理员处理！";// . $mail->ErrorInfo;
+    } else {
+      $msg .= "\\n请于24小时内登录邮箱{$email}查看邮件，确认账号并激活！";
+    }
+    //************************ 发送激活邮件 ****************************
   } else {    
 	  $sql="UPDATE `users` SET `accesstime`=NOW() WHERE `user_id`='$user_id'";
     $mysqli->query($sql);

@@ -79,7 +79,7 @@
 
   /* Email configuration */
   static $SMTP_SERVER="smtp.exmail.qq.com";
-  static $SMTP_SERVER_PORT=25;
+  static $SMTP_SERVER_PORT=465;//阿里云服务器的25端口是不开放的，改用加密的SSL 465端口，若服务器的25端口开放，用25端口smtp也无妨
   static $SMTP_USER="forgot@hsacm.com";
   static $SMTP_PASS="hznuojForgot123";
 ?>
