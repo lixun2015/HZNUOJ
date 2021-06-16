@@ -13,6 +13,7 @@
   if($OJ_VCODE){
     $vcode=trim($_POST['vcode']);
     if(($vcode!= $_SESSION["vcode"]||$vcode==""||$vcode==null) ){
+      $_SESSION['gotoIndex'] = true;
       echo "<script language='javascript'>\n";
       echo "alert('$MSG_VCODE$MSG_Wrong !');\n";
       echo "window.location.href='loginpage.php';";  //echo "history.go(-1);\n";
@@ -31,7 +32,10 @@
     $password= stripslashes($password);
   }
 
-  
+  if (isset($_SESSION['gotoIndex'])){
+    $go = "window.location.href='index.php';";
+    unset($_SESSION['gotoIndex']);
+  } else  $go = "history.go(-2);\n";
   // 比对用户名和密码
   $login=check_login($user_id,$password, $cid);
   if ($login == -1) {
@@ -78,7 +82,7 @@
     } else {
       require_once("./include/rank.inc.php");
       updateRank($user_mysql);
-      echo "history.go(-2);\n";
+      echo $go;
     }
     echo "</script>";
 

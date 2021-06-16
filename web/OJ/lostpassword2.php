@@ -32,6 +32,7 @@
     $sql="UPDATE `users` SET `password`='".pwGen($lost_key)."' WHERE `user_id`='".$lost_user_id."'";
     $result=$mysqli->query($sql);
     $view_errors=$MSG_RESETPASSWORD_SUCC;
+    $_SESSION['gotoIndex'] = true;
   } else {
     $view_errors=$MSG_RESETPASSWORD_FAIL;
   }

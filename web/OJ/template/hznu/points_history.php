@@ -105,7 +105,7 @@ function generate_url($data){
       </th></tr>
       <tr>
         <th class='am-text-left' style='width:2%'><?php echo $MSG_ID ?></th>
-        <th class='am-text-left' style='width:10%'>Code</th>
+        <th class='am-text-left' style='width:10%'><?php echo $MSG_RUNID ?></th>
         <th class='am-text-left' style='width:13%'><?php echo $MSG_SUBMIT_TIME ?></th>
         <th class='am-text-left' style='width:40%'><?php echo $MSG_Logs ?></th>
         <th class='am-text-left'><?php echo $MSG_Operator ?></th>

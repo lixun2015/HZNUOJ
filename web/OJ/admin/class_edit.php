@@ -123,11 +123,14 @@ if (isset($_GET['del'])) { //删除班级信息
     if (class_is_exist($c)) {
       echo $c . "-有重名，无法写入！<br>\n";
     } else {
-      $sql = "INSERT INTO `class_list` VALUES ('" . $c . "', '" . $year . "')";
+      $sql = "INSERT INTO `class_list`(`class_name`,`enrollment_year`) VALUES ('" . $c . "', '" . $year . "')";
       $mysqli->query($sql);
-      if($year!=0) echo $year . "级 " . $c. "-成功写入！<br>\n";
-      else echo "无入学年份 " . $c. "-成功写入！<br>\n";
-      $cnt++;
+      if($year!=0) echo $year . "级 " . $c;
+      else echo "无入学年份 " . $c;
+      if ($mysqli->affected_rows>0) {
+        echo "-成功写入！<br>\n";
+        $cnt++;
+      } else echo "-写入失败！<br>\n";
     }
   }
   foreach ($class_list_err as $err) {

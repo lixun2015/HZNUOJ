@@ -35,6 +35,8 @@ if(isset($_GET['del'])) { //删除账号
       $mysqli->query($sql); //删除非管理员的权限
       $sql = "DELETE FROM `tag` WHERE `user_id` IN ($cid)";
       $mysqli->query($sql); //删除用户的标签
+      $sql = "DELETE FROM `points_log` WHERE `user_id` IN ($cid)";
+      $mysqli->query($sql); //删除用户的积分日志
       $sql = "DELETE FROM `users` WHERE `user_id` IN ($cid)";
       $mysqli->query($sql); //删除用户记录
       if($mysqli->affected_rows<0) $msg = "删除失败";
