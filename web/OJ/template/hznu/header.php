@@ -204,6 +204,9 @@ BOT;
                         $points=$rowp->points;
                       } else $points=0;
                       echo "<li><a href='./points_history.php?user={$_SESSION['user_id']}'><span class='am-icon-apple'></span> ". round($points,2)." $MSG_points</a></li>";
+                      // if(isset($OJ_points_reChange)&&$OJ_points_reChange){
+                      //   echo "<li><a href='./points_rechange.php'><span class='am-icon-credit-card-alt'></span> $MSG_points$MSG_Recharge </a></li>";
+                      // }
                     }
                     if ($show_tag) echo "<li><a href='./changeTag.php'><span class='am-icon-toggle-on'></span> $MSG_HIDETAG</a></li>";
                     else echo "<li><a href='./changeTag.php'><span class='am-icon-toggle-off'></span> $MSG_SHOWTAG</a></li>";

@@ -139,6 +139,7 @@
   $MSG_Alias = "Alias";
   $MSG_Top = "TOP";
   $MSG_AccessLevel = "Access Level";
+  $MSG_Undo = "Undo";
   
   /*
   下面的代码请不要乱动，以免出问题！！！

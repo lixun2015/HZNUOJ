@@ -151,6 +151,9 @@ sss;
               $html_li .= "<li><a href='$urlbaseDir/reg_code.php'>$MSG_REG_CODE</a></li>";
               $html_li .= "<li><a href='$urlbaseDir/user_import.php'>$MSG_USER$MSG_IMPORT</a></li>";
           }
+          if(HAS_PRI("inner_function")) {
+            $html_li.="<li><a href='$urlbaseDir/points.php'>$MSG_USER$MSG_points</a></li>";
+          }
           if($html_li!=""){
             echo<<<sss
             <li class="dropdown">

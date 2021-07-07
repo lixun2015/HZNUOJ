@@ -139,6 +139,7 @@
   $MSG_Alias = "别名";
   $MSG_Top = "固顶";
   $MSG_AccessLevel = "访问等级";
+  $MSG_Undo = "撤销";
   
   /*
   下面的代码请不要乱动，以免出问题！！！
