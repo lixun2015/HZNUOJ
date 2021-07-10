@@ -79,9 +79,9 @@
         } else $view_logs[$cnt][1] = "&nbsp";
         $view_logs[$cnt][2]= $row->pay_time;
         $view_logs[$cnt][3]= $row->item;
-        if($row->operator==""){
+        //if($row->operator==""){
             $view_logs[$cnt][4] = "System";
-        } else $view_logs[$cnt][4]= $row->operator;
+        //} else $view_logs[$cnt][4]= $row->operator;
         if($row->pay_points>=0) {
             $view_logs[$cnt][5] = round($row->pay_points, 2);
             $view_logs[$cnt][6] = "&nbsp";

@@ -152,7 +152,7 @@ sss;
               $html_li .= "<li><a href='$urlbaseDir/user_import.php'>$MSG_USER$MSG_IMPORT</a></li>";
           }
           if(HAS_PRI("inner_function")) {
-            $html_li.="<li><a href='$urlbaseDir/points.php'>$MSG_USER$MSG_points</a></li>";
+            $html_li.="<li><a href='$urlbaseDir/points.php?function=3'>$MSG_USER$MSG_points</a></li>";
           }
           if($html_li!=""){
             echo<<<sss
