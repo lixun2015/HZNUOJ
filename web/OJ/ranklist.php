@@ -31,7 +31,7 @@ $sql_orderby = "";
 
 // check the prefix arg
 if(isset($_GET['prefix'])){
-	$prefix=$_GET['prefix'];
+	$prefix=$mysqli->real_escape_string($_GET['prefix']);
 	$sql_filter .=" AND users.user_id like '%$prefix%'";
 }
 

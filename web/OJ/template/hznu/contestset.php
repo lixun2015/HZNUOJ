@@ -66,7 +66,7 @@ function generate_url($data){
     <!-- 通过关键词查找 start -->
       <div class="am-form-group am-form-icon">
         <i class="am-icon-binoculars"></i>
-        <input type="text" class="am-form-field" placeholder=" &nbsp;<?php echo $MSG_KEYWORDS ?>" name="search" value="<?php echo $search ?>">
+        <input type="text" class="am-form-field" placeholder=" &nbsp;<?php echo $MSG_KEYWORDS ?>" name="search" value="<?php echo htmlentities($search) ?>">
       </div>
     <!-- 通过关键词查找 end -->
        <button type="submit" class="am-btn am-btn-secondary"><?php echo $MSG_SEARCH ?></button>

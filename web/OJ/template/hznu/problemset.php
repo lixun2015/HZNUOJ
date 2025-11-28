@@ -71,7 +71,7 @@ function generate_url($data){
         <div class="am-u-sm-9">
           <div class="am-form-group am-form-icon">
             <i class="am-icon-binoculars"></i>
-            <input type="text" class="am-form-field" placeholder=" &nbsp;<?php echo $MSG_KEYWORDS ?>" name="search" value="<?php echo $search ?>">
+            <input type="text" class="am-form-field" placeholder=" &nbsp;<?php echo $MSG_KEYWORDS ?>" name="search" value="<?php echo htmlentities($search) ?>">
             <input type="hidden" name="OJ" value="<?php echo $args['OJ'] ?>">
           </div>
         </div>
